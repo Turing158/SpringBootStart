@@ -163,9 +163,105 @@ groupId可以起一个你自己想起的，例如：com.xxx
 
 5. 在application.java启动类启动，并打开浏览器输入**localhost:8080**即可查看结果
 
+![image-20240207204059405](./doc/image-20240207204059405.png)
+
 ## application
 
 我们先在**resources**文件下新建一个文件**application.properties**或**application.yml**，这个文件是用来设置Springboot的一些配置的，但是目前还没有用到，所以先搁置着
 
 ![image-20240202162603439](./doc/image-20240202162603439.png)
 
+# SpringBoot对于现在的使用方式
+
+------
+
+按现情况一般来说，已经很少人使用前后端不分离的模式，就不会单纯的让后端将数据处理完，还要将页面通过模板引擎渲染出来，这不仅让性能下降，在团队中也不好沟通和交流，现在的Springboot大部分都是用来处理数据，然后返回**json**格式给前端
+
+## @RequestMapping注解的替代
+
+我们在编写**Controller**控制类的时候，如果要让浏览器访问到，就需要使用**@RequestMapping**注解，并在里面填写相应的值，而在浏览器中，发送请求分两种方式"**GET**"、"**POST**"，而**@RequestMapping**注解的**method**的默认值为**GET**，也就是**GET请求**，但是也能收到浏览器发来的POST请求，这会使得一些*不法分纸搞搞震*，让你很难受，所以需要用到更好的注解！**@GetMapping、@PostMapping**
+
+- @GetMapping：用于GET请求
+- @PostMapping：用于POST请求
+
+```java
+@GetMapping("/testGet")
+public String test2(){
+    System.out.println("使用了get请求访问");
+    return "test";
+}
+@PostMapping("/testPost")
+public String test3(){
+    System.out.println("使用了post请求访问");
+    return "test";
+}
+```
+
+## 使用Json格式
+
+我们发数据给前端的时候，不能就发一串数据，而是采用**json**格式发送
+
+1. 新建一个**软件包**名为**entity**，里面再创建一个类**ResultData.java**，将**构造函数和get、set方法**添加上去
+
+   ```java
+   public class ResultData {
+       private String status;
+       private String msg;
+       public ResultData() {}
+       public ResultData(String status, String msg) {
+           this.status = status;
+           this.msg = msg;
+       }
+       public String getStatus() {
+           return status;
+       }
+       public void setStatus(String status) {
+           this.status = status;
+       }
+       public String getMsg() {
+           return msg;
+       }
+       public void setMsg(String msg) {
+           this.msg = msg;
+       }
+   }
+   ```
+
+   到时候，方法返回的就是这个类
+
+2. 在**controller**里新建一个测试类**test1Controller.java**
+
+   **@ResponseBody**注释就是将方法体返回的不是页面，返回的是json格式
+
+   **new**一个**ResultData**去给这个方法返回
+
+   ```java
+   @Controller
+   public class test1Controller {
+       @GetMapping("/test1")
+       @ResponseBody
+       public ResultData test1(){
+           ResultData rd = new ResultData("200", "成功");
+           return rd;
+       }
+   }
+   ```
+
+   但是每个方法都要使用**@ResponseBody注释**才能返回**json**格式有点麻烦，但是其实将**@Controller**换成**@RestController**就不需要再用**@ResponseBody注释**，简化了代码，下面才是最终的代码
+
+   ```java
+   @RestController
+   public class test1Controller {
+       @GetMapping("/test1")
+       public ResultData test1(){
+           ResultData rd = new ResultData("200", "成功");
+           return rd;
+       }
+   }
+   ```
+
+3. 启动测试
+
+   ![image-20240207204039342](./doc/image-20240207204039342.png)
+
+Springboot的基本用法就这些了，如果还有什么补充，尽管提出
